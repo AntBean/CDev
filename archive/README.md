@@ -4,7 +4,7 @@ Each folder stores one code which **strictly** corresponds to one experiment.
 
 Naming:
 
-Data_Model_Extra
+Date_Model_Extra
 
 e.g. 2015.06.04_SVM_rbfKernel
 
