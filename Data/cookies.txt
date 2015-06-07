@@ -1,0 +1,13 @@
+# HTTP Cookie File for domains related to kaggle.com.
+# Downloaded with cookies.txt Chrome Extension (https://chrome.google.com/webstore/detail/njabckikapfpffapmjgojcnbfjonfjfg)
+# Example:  wget -x --load-cookies cookies.txt https://www.kaggle.com/c/diabetic-retinopathy-detection/forums/t/12542/faster-download-of-dataset/66373
+#
+.kaggle.com	TRUE	/	FALSE	1485827639.394806	.ASPXAUTH	636302162BC25E4A1B323F2D86FEB79AD6DE33856A9DB0E377672EC0F076E445D377A969A8A8094B36112F056CCF5E763C9374FE0E7366060BD83E2077DDE7F7EB69528D382BCEBE3CA7E4A9062A710C9B2D4DC0
+.www.kaggle.com	TRUE	/	FALSE	0	ARRAffinity	a50d29901b64e6b39d3c0803ea06b45a5eb4d7727728d0ea8813c395846f7da6
+www.kaggle.com	FALSE	/	FALSE	0	__RequestVerificationToken	x33SkL3VGon7VWiXs3-zWgrPE1PetQsjiol75JzlDLjB8aL3wDggqJbP1KHarHL8OFz7U73jQ9F2h2kQPc0F1FvReYw1
+.kaggle.com	TRUE	/	FALSE	1433713051	__utmt	1
+.kaggle.com	TRUE	/	FALSE	1496784815	__utma	158690720.626890588.1420780630.1433712452.1433712815.143
+.kaggle.com	TRUE	/	FALSE	1433714615	__utmb	158690720.1.10.1433712815
+.kaggle.com	TRUE	/	FALSE	0	__utmc	158690720
+.kaggle.com	TRUE	/	FALSE	1449480815	__utmz	158690720.1433712815.143.34.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided)
+www.kaggle.com	FALSE	/	TRUE	0	TempData	.NvPynsswuR2EJnkZ7ZLLJjlloPV1i8syUeekjgg7BMa41VygjwzujygCUE+bNWuWy2P9bfzx9GNBIPzHXKZmp6rPsWp/aOSw53AiQIyyDkLj8vm3JneylPXI4hxueZKUUS7jEcSl2HOvFFwi9anfglRmLUX+oQEzQ4nhWYiGBvUsAtBW3S9zBlLsUSDW+g33g7BuKF7ad09gqG8fdtC3St3GCxHYtnJlpSyyzThXfMdrX6Q3EgIRktzCe4qJGTiqMKlYyOltbhhhnMIhCgUAoLxTK0miqyoN2rYRehEw6+i38rCte/9Cxe/TcjQFHg+HMSdvaA==
