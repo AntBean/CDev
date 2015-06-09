@@ -1,5 +1,6 @@
 # CDev
-Cross device prediction for ICDM kaggle competition
+Cross device prediction for ICDM kaggle competition    
+See [here](https://www.kaggle.com/c/icdm-2015-drawbridge-cross-device-connections)
 
 ## TODO
 1. Domain knowledge    
