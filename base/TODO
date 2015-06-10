@@ -1,0 +1,8 @@
+Stephen:
+finish data.py
+
+Jake:
+1. fix aux.py which is so verbose, think about how to simplify it
+2. get linearRegression and logisticRegression to run.
+3. Next: Gradient Boosting machine and SVM
+
