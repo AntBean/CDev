@@ -6,8 +6,6 @@ Model file.
 
 __all__ = ['Model']
 
-import os
-import sys
 import numpy as np
 from sklearn import linear_model
 from aux import *
@@ -33,10 +31,12 @@ class Model(object):
 
     def getParameters(self):
         """get the parameters of sequential"""
-        # TODO
         params = ()
         for elem in self.sequential._list:
-            params += (elem._coef,)
+            if hasttr(elem, '_coef'):
+                params += (elem._coef,)
+            else:
+                params += (None,)
 
     def forward(self, input):
         """ forward through"""
@@ -47,13 +47,16 @@ class Model(object):
         # TODO args
         self.sequential.fit(input, label, args)
 
-    def createLr(self):
+    def createLR(self, args):
         """create linear regression module"""
-        # TODO
+        return linear_model.LinearRegression(args)
+
+    def createLogR(self, args):
+        """create logistic regression module"""
+        return linear_model.LogisticRegression(args)
 
     def createSequential(self, config):
         self.sequential = Sequential()
         for elem_config in config:
             sequential.add(self.createModule(elem_config))
         return self.sequential
-
