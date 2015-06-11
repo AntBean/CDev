@@ -77,3 +77,7 @@ class Sequential(object):
             else:
                 params += (None,)
         return params
+
+    def getSequense(self):
+        """get the whole list of models"""
+        return self._list
