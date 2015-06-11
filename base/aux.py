@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 # By Jake
 '''
 aux file, defining Module and Sequential
@@ -6,9 +6,6 @@ aux file, defining Module and Sequential
 
 __all__ = ['Module', 'Sequential']
 
-import sys
-from sklearn import linear_model
-from copy import copy
 
 class Module(object):
     """Module class"""
@@ -16,18 +13,9 @@ class Module(object):
         self._module = module
         self.output = None
         self.input = None
-        # Get a function handle for fitting
-        #if isinstance(self._module, CountVectorizer):
-        #    self.fit = self._module.fit_transform
-        #    self.forward = self._module.transform
-        if isinstance(self._module, linear_model.logistic.LogisticRegression):
-            # TODO  
-            # too ugly can be better though
-            self.fit = self._module.fit
-            self.forward = self._module.predict
-        else:
-            print('The module added is not supported.')
-            sys.exit(-1)
+        # TODO exceptions are await.
+        self.fit = self._module.fit
+        self.forward = self._module.predict
 
     def getModule(self):
         return self._module
@@ -56,16 +44,36 @@ class Sequential(object):
 
     def __contrains__(self, elem):
         return elem in self._list
-    
+
     def add(self, module_elem):
         """add a new module"""
         self._list.append(Module(module_elem))
 
-    def fit(self, input, labels):
-        # TODO this is just too verbose and ugly
+    def fit(self, input, labels, fit_flag):
         """fitting the sequential"""
+        assert len(fit_flag) == len(self._list)
+        for flag, elem in zip(fit_flag, self._list):
+            if not flag:
+                # Not fitting the model, but forwarding
+                input = elem.forward(input)
+            else:
+                # Fitting the module
+                elem.fit(input, labels)
+                input = elem.forward(input)
 
     def forward(self, input, normalization=True):
-        # TODO this is just too verbose and ugly
         """forwarding"""
+        for elem in self._list:
+            elem.output = elem.forward(input)
         return self._list[-1].output
+
+    def getParameters(self):
+        """get the parameters of modules of self._list
+           concat them in a tuple structure"""
+        params = ()
+        for elem in self._list:
+            if hasattr(elem, '_coef'):
+                params += (elem._coef,)
+            else:
+                params += (None,)
+        return params

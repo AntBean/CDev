@@ -6,7 +6,6 @@ Model file.
 
 __all__ = ['Model']
 
-import numpy as np
 from sklearn import linear_model
 from aux import *
 
@@ -31,21 +30,18 @@ class Model(object):
 
     def getParameters(self):
         """get the parameters of sequential"""
-        params = ()
-        for elem in self.sequential._list:
-            if hasttr(elem, '_coef'):
-                params += (elem._coef,)
-            else:
-                params += (None,)
+        return self.sequential.getParameters()
 
     def forward(self, input):
         """ forward through"""
         return self.sequential.forward(input)
 
-    def fit(self, input, labels, args):
+    def fit(self, input, labels, fit_flag=None):
         """ fitting """
-        # TODO args
-        self.sequential.fit(input, label, args)
+        if fit_flag is None:
+            fit_flag = [False]*len(self.sequential)
+            fit_flag[-1] = True
+        self.sequential.fit(input, label, fit_flag)
 
     def createLR(self, args):
         """create linear regression module"""
