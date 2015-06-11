@@ -9,6 +9,9 @@ __all__ = ['Model']
 from sklearn import linear_model
 from aux import *
 
+name_handle = {'LR': linear_model.LinearRegression,
+              'LogR': linear_model.LogisticRegression}
+
 
 class Model(object):
     """Model class"""
@@ -43,13 +46,12 @@ class Model(object):
             fit_flag[-1] = True
         self.sequential.fit(input, label, fit_flag)
 
-    def createLR(self, args):
-        """create linear regression module"""
-        return linear_model.LinearRegression(args)
-
-    def createLogR(self, args):
-        """create logistic regression module"""
-        return linear_model.LogisticRegression(args)
+    def createModule(self, config):
+        """create module"""
+        if config.has_key('args') and config.get('args') != None:
+            return name_handle.get(config.get('name'))(config.get('args'))
+        else:
+            return name_handle.get(config.get('name'))()
 
     def createSequential(self, config):
         self.sequential = Sequential()

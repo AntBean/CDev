@@ -15,7 +15,8 @@ config['data']['testpath'] = 'path/to/test'
 
 
 # model
-config['model']['name'] = 'lr'
+config['model'] = []
+config['model'].append({'name': 'lr'})
 
 # train
 config['train'] = {}
