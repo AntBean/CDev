@@ -84,4 +84,4 @@ class Main(object):
 
 if __name__ == '__main__':
     main = Main(config)
-    main.main() 
+    main.main()
