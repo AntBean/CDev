@@ -13,7 +13,7 @@ Datasets:
     ipagg_all.csv
     property_category.csv
 
-This code does four things:
+This code does five things:
     1. read the files cookie_all_basic.csv and dev_train_basic.csv and remove all
         the entries that lack a user identifier (i.e. drawbridge_handle == -1).
 
@@ -24,11 +24,15 @@ This code does four things:
         dataset together on the user id to get the positive dataset.
         Theoretically, it should generate all the possible positive data.
 
-    4. output to csv.
+    4. randomly choose a mount of negative data point to compose the negative
+        dataset
+
+    5. output to csv. IN THE "../Data"
 
 TODO or Problems:
 
-    1.  It may have infinite negative data, making the dataset hard to generate.
+    1.  [done, randomly choose amout of data] It may have infinite negative data,
+        making the dataset hard to generate.
         A simple feasible way is to compare one by one until we get enough data.
         But will this influence the result of out experiments? (bias)
 
@@ -36,6 +40,7 @@ TODO or Problems:
 """
 
 import pandas as pd
+import random as r
 from sklearn.feature_extraction import DictVectorizer as DV
 
 class Data(object):
@@ -68,7 +73,7 @@ class Data(object):
         boolean_variables = ['d_anonymous_c0']
         categorical_variables = ['device_type', 'device_os','d_country',
                                     'd_anonymous_c1', 'd_anonymous_c2']
-        int_variables = ['d_anonymous_5', 'd_anonymous_6', 'd_anonymous_7']
+        #int_variables = ['d_anonymous_5', 'd_anonymous_6', 'd_anonymous_7']
         changed_var = boolean_variables + categorical_variables
         ch_df = device_df[changed_var]
         ch_df_after = self.categorical_2_dummy(ch_df)
@@ -89,7 +94,7 @@ class Data(object):
         boolean_var = ['c_anonymous_c0']
         categorical_var = [u'computer_os_type', u'computer_browser_version',
                            u'c_country',u'c_anonymous_c1', u'c_anonymous_c2']
-        int_var = [u'c_anonymous_5', u'c_anonymous_6', u'c_anonymous_7']
+        #int_var = [u'c_anonymous_5', u'c_anonymous_6', u'c_anonymous_7']
         changed_var = boolean_var + categorical_var
         ch_df = cookie_df[changed_var]
         ch_df_after = self.categorical_2_dummy(ch_df)
@@ -104,9 +109,27 @@ class Data(object):
         res_df['label'] = 1
         return res_df
 
-    def gen_neg_data(self):
+    def gen_neg_data(self, device_df, cookie_df, num_of_records):
         """docstring for gen_neg_data"""
-        pass
+        FACTOR = 19
+
+        device_length = len(device_df)
+        device_index = [r.randint(1,FACTOR) for x in range(device_length)]
+        device_df["merge_index"] = device_index
+
+        cookie_length = len(cookie_df)
+        cookie_index = [r.randint(1,FACTOR) for x in range(cookie_length)]
+        cookie_df["merge_index"] = cookie_index
+
+        res_df = pd.merge(device_df,cookie_df, how='inner', on='merge_index', sort=True)
+
+        res_df = res_df[res_df['d_drawbridge_handle'] != res_df['c_drawbridge_handle']]
+        res_df = res_df.drop("merge_index", axis=1)
+        res_length = min(num_of_records,len(res_df))
+        res_df = res_df.iloc[:,:res_length]
+        res_df["label"] = -1
+
+        return res_df
 
     def main(self):
         """docstring for main"""
@@ -115,7 +138,10 @@ class Data(object):
         cookie_df = self.cookie_data_processing()
         pos_data = self.gen_pos_data(device_df, cookie_df)
         pos_data.to_csv("../Data/pos_dev_cookie.csv")
-        # TODO: negative data set
+
+        num_of_neg_data = 3000
+        neg_data = self.gen_neg_data(device_df, cookie_df,num_of_neg_data)
+        neg_data.to_csv("../Data/neg_dev_cookie.csv")
 
 if __name__ == '__main__':
     data = Data()
