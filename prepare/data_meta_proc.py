@@ -55,9 +55,10 @@ class Data(object):
         """docstring for categorical_2_dummy"""
         df = df.applymap(str)
         ch_dict = df.T.to_dict().values()
-        vec = DV(sparse=False)
+        vec = DV(sparse=True)
         ch_array = vec.fit_transform(ch_dict)
-        df_after = pd.DataFrame(ch_array)
+        ch_array = ch_array.astype('float16')
+        df_after = pd.DataFrame(ch_array.toarray(), dtype='float16')
         dummy_columns = vec.get_feature_names()
         df_after.columns = dummy_columns
         df_after.index = df.index
