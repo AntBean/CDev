@@ -45,7 +45,7 @@ from sklearn.feature_extraction import DictVectorizer as DV
 
 class Data(object):
 
-    def __init__(self, path = "../../KuggleData/"):
+    def __init__(self, path = "../Save/Data/"):
         self.data_path = path
 
     def categorical_2_dummy(self, df):
