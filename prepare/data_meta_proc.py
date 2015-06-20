@@ -157,6 +157,28 @@ class Data(object):
 
         return res_df
 
+# This new method uses a more intuitive way, just pick one by one, to genertate
+# the negative data. No merge, no drop, so no memory error. But, it has another
+# problem of having a few duplicated entries.
+    def simple_neg_data_generate(self, device_df, cookie_df, number_of_records):
+        """docstring for simple_neg_data_generate"""
+        list_of_rows = []
+        d_len = len(device_df)
+        c_len = len(cookie_df)
+
+        i=0
+        while i<num_of_records:
+            d_row = device_df.iloc[r.randint(0,d_len-1),:]
+            c_row = cookie_df.iloc[r.randint(0,c_len-1),:]
+            if (d_row.d_drawbridge_handle != c_row.c_drawbridge_handle) :
+                new_row = pd.concat([d_row,c_row],axis=0)
+                list_of_rows.append(new_row)
+                i += 1
+
+        res_df = pd.concat(list_of_rows, axis = 1).T
+        res_df["label"] = -1
+        return res_df
+
     def main(self):
         """docstring for main"""
 
