@@ -1,6 +1,6 @@
 #-*- coding: utf-8 -*-
 """
-Data file.
+Data preparation file.
 By Stephen Lai
 
 Datasets:
@@ -27,7 +27,7 @@ This code does five things:
     4. randomly choose a mount of negative data point to compose the negative
         dataset
 
-    5. output to csv. IN THE "../Data"
+    5. output to csv. In the "../Data"
 
 TODO or Problems:
 
