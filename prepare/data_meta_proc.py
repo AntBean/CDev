@@ -66,13 +66,21 @@ class Data(object):
         df_after = pd.DataFrame(ch_array, dtype='float16') 
         '''
         # One drawback of this, is SparseDataFrame doesn't support float32 or float16, which is a shame
+        '''
         # TODO: Wondering the cheapest way to penetrate pandas.DataFrame; why don't we just wait for stackOverflow.
         # TODO: simple, csr_matrix -> sparseDataFrame, without releasing toarray(), is this the most space efficient way?
+        # TODO issue on github
         df_after = pd.SparseDataFrame(index=df.index, columns=vec.get_featrue_names())
         for i in np.arange(ch_array.shape[0]):
             elem = pd.SparseSeries(ch_array[i].toarray().ravel())
             df_after.loc[[2]] = [elem]  # not implemendted error
-        # TODO issue on github
+        '''
+        # New method
+        df_after = pd.DataFrame(ch_array[:, 0].toarray().ravel()).to_sparse(0)
+        for i in range(1, ch_array.shape[1]):
+            df_after[i] = ch_array[:, i].toarray().ravel()
+            if i % 1000 == 0:
+                print('Finish: ' + str(i))
         return df_after
 
     def dev_data_processing(self):
