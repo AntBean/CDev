@@ -39,6 +39,8 @@ TODO or Problems:
     2.  The data has quite a lot of missing value (-1), how to deal with them ?
 """
 
+
+import numpy as np
 import pandas as pd
 import random as r
 from sklearn.feature_extraction import DictVectorizer as DV
@@ -57,12 +59,17 @@ class Data(object):
         ch_dict = df.T.to_dict().values() # This creates huge memory ~ 10Gb
         vec = DV(sparse=True) 
         ch_array = vec.fit_transform(ch_dict)
+        '''
         ch_array = ch_array.astype('float16')
-        print(ch_array)
-        import pdb; pdb.set_trace()
         # This step kills everything, only 9862926 of 57083328046 have values
         # Calling toarray(), it will have 2byte*57083328046=106Gb
-        df_after = pd.DataFrame(ch_array.toarray(), dtype='float16') 
+        df_after = pd.DataFrame(ch_array, dtype='float16') 
+        '''
+        # One drawback of this, is SparseDataFrame doesn't support float32 or float16, which is a shame
+        # TODO: Wondering the cheapest way to penetrate pandas.DataFrame; why don't we just wait for stackOverflow.
+        # TODO: simple, csr_matrix -> sparseDataFrame, without releasing toarray()
+        df_after = pd.SparseDataFrame( [pd.SparseSeries(ch_array[i].toarray().ravel()) \
+                                      for i in np.arange(ch_array.shape[0])] )
         dummy_columns = vec.get_feature_names()
         df_after.columns = dummy_columns
         df_after.index = df.index
@@ -189,6 +196,8 @@ class Data(object):
         device_df = self.dev_data_processing()
         print('device done')
         cookie_df = self.cookie_data_processing()
+        print('cookie done')
+
         print('Generating positive data.')
         pos_data = self.gen_pos_data(device_df, cookie_df)
         print('Saving positive data')
@@ -196,7 +205,7 @@ class Data(object):
 
         num_of_neg_data = 3000
         print('Generating negative data.')
-        neg_data = self.gen_neg_data(device_df, cookie_df, num_of_neg_data)
+        neg_data = self.simple_neg_data_generate(device_df, cookie_df, num_of_neg_data)
         print('Saving nagative data')
         neg_data.to_csv("../Data/neg_dev_cookie.csv")
 
