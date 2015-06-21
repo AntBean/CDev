@@ -54,11 +54,15 @@ class Data(object):
     def categorical_2_dummy(self, df):
         """docstring for categorical_2_dummy"""
         df = df.applymap(str)
-        ch_dict = df.T.to_dict().values()
-        vec = DV(sparse=True)
+        ch_dict = df.T.to_dict().values() # This creates huge memory ~ 10Gb
+        vec = DV(sparse=True) 
         ch_array = vec.fit_transform(ch_dict)
         ch_array = ch_array.astype('float16')
-        df_after = pd.DataFrame(ch_array.toarray(), dtype='float16')
+        print(ch_array)
+        import pdb; pdb.set_trace()
+        # This step kills everything, only 9862926 of 57083328046 have values
+        # Calling toarray(), it will have 2byte*57083328046=106Gb
+        df_after = pd.DataFrame(ch_array.toarray(), dtype='float16') 
         dummy_columns = vec.get_feature_names()
         df_after.columns = dummy_columns
         df_after.index = df.index
@@ -183,6 +187,7 @@ class Data(object):
         """docstring for main"""
 
         device_df = self.dev_data_processing()
+        print('device done')
         cookie_df = self.cookie_data_processing()
         print('Generating positive data.')
         pos_data = self.gen_pos_data(device_df, cookie_df)
