@@ -110,7 +110,7 @@ class Data(object):
         changed_var = boolean_variables + categorical_variables
         ch_df = device_df[changed_var]
         ch_df_after = self.categorical_2_dummy(ch_df)
-        device_df = device_df.drop(changed_var, axis=1)
+        device_df = device_df.drop(changed_var, axis=1).to_sparse(0)
         device_df = device_df.join(ch_df_after)
         return device_df
 
@@ -141,7 +141,7 @@ class Data(object):
         changed_var = boolean_var + categorical_var
         ch_df = cookie_df[changed_var]
         ch_df_after = self.categorical_2_dummy(ch_df)
-        cookie_df = cookie_df.drop(changed_var, axis=1)
+        cookie_df = cookie_df.drop(changed_var, axis=1).to_sparse(0)
         cookie_df = cookie_df.join(ch_df_after)
         return cookie_df
 
