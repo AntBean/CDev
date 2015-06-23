@@ -53,6 +53,13 @@ class Data(object):
             path += '/'
         self.data_path = path
 
+    def string_2_int(self, df, attr):
+        for attr_elem in attr:
+            if attr_elem not in df.columns:
+                continue
+            df[attr_elem] = df[attr_elem].apply(lambda x: int(x[x.find('_')+1: ]))
+        return df
+
     def categorical_2_dummy(self, df):
         """docstring for categorical_2_dummy"""
         df = df.applymap(str)
@@ -81,6 +88,7 @@ class Data(object):
             df_after[i] = ch_array[:, i].toarray().ravel()
             if i % 1000 == 0:
                 print('Finish: ' + str(i))
+            break
         return df_after
 
     def dev_data_processing(self):
@@ -106,11 +114,14 @@ class Data(object):
                                  'd_country',
                                  'd_anonymous_c1',
                                  'd_anonymous_c2']
+        string_variables = [u'd_drawbridge_handle', u'device_id']
         # int_variables = ['d_anonymous_5', 'd_anonymous_6', 'd_anonymous_7']
         changed_var = boolean_variables + categorical_variables
         ch_df = device_df[changed_var]
         ch_df_after = self.categorical_2_dummy(ch_df)
-        device_df = device_df.drop(changed_var, axis=1).to_sparse(0)
+        device_df = device_df.drop(changed_var, axis=1)
+        device_df = self.string_2_int(device_df, string_variables)
+        device_df = device_df.to_sparse(0)
         device_df = device_df.join(ch_df_after)
         return device_df
 
@@ -138,10 +149,13 @@ class Data(object):
                            u'c_anonymous_c1',
                            u'c_anonymous_c2']
         # int_var = [u'c_anonymous_5', u'c_anonymous_6', u'c_anonymous_7']
+        string_variables = [u'c_drawbridge_handle', u'cookie_id']
         changed_var = boolean_var + categorical_var
         ch_df = cookie_df[changed_var]
         ch_df_after = self.categorical_2_dummy(ch_df)
-        cookie_df = cookie_df.drop(changed_var, axis=1).to_sparse(0)
+        cookie_df = cookie_df.drop(changed_var, axis=1)
+        cookie_df = self.string_2_int(cookie_df, string_variables)
+        cookie_df = cookie_df.to_sparse(0)
         cookie_df = cookie_df.join(ch_df_after)
         return cookie_df
 
