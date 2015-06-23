@@ -161,6 +161,7 @@ class Data(object):
 
     def gen_pos_data(self, device_df, cookie_df):
         """docstring for gen_pos_data"""
+        # TODO basically, this is not supported. pandas doesn't support SparseDataFrame, which is a shame!
         res_df = pd.merge(device_df, cookie_df, how='inner',
                           left_on='d_drawbridge_handle',
                           right_on='c_drawbridge_handle', sort=True)
