@@ -36,3 +36,6 @@ We always start from easiest thing, and get it complicated. This bottom-up path 
 
 For supervised, do scikit-learn on the raw data first.     
 For another, do LDA (linear discriminative analysis, easiest version metric) in Euclidean space.
+
+## Code TODO
+pandas only works for dense

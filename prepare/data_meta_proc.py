@@ -88,7 +88,6 @@ class Data(object):
             df_after[i] = ch_array[:, i].toarray().ravel()
             if i % 1000 == 0:
                 print('Finish: ' + str(i))
-            break
         return df_after
 
     def dev_data_processing(self):
