@@ -40,6 +40,9 @@ TODO or Problems:
 """
 
 
+import sys
+sys.path.append('..')
+from modules import *
 import numpy as np
 import pandas as pd
 import random as r
@@ -161,9 +164,9 @@ class Data(object):
     def gen_pos_data(self, device_df, cookie_df):
         """docstring for gen_pos_data"""
         # TODO basically, this is not supported. pandas doesn't support SparseDataFrame, which is a shame!
-        res_df = pd.merge(device_df, cookie_df, how='inner',
+        res_df = sparse_merge(device_df, cookie_df, 
                           left_on='d_drawbridge_handle',
-                          right_on='c_drawbridge_handle', sort=True)
+                          right_on='c_drawbridge_handle')
         res_df['label'] = 1
         return res_df
 
@@ -179,8 +182,9 @@ class Data(object):
         cookie_index = [r.randint(1, FACTOR) for x in range(cookie_length)]
         cookie_df["merge_index"] = cookie_index
 
-        res_df = pd.merge(device_df, cookie_df, how='inner',
-                          on='merge_index', sort=True)
+        res_df = sparse_merge(device_df, cookie_df,
+                              left_on='merge_index',
+                              right_on='mergbe_index')
 
         res_df = res_df[res_df['d_drawbridge_handle'] != res_df['c_drawbridge_handle']]
         res_df = res_df.drop("merge_index", axis=1)
