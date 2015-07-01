@@ -48,7 +48,7 @@ from sklearn.feature_extraction import DictVectorizer as DV
 
 class Data(object):
 
-    def __init__(self, path="../Data/"):
+    def __init__(self, path="../DataSample/"):
         if not path.endswith('/'):
             path += '/'
         self.data_path = path
@@ -223,13 +223,13 @@ class Data(object):
         print('Generating positive data.')
         pos_data = self.gen_pos_data(device_df, cookie_df)
         print('Saving positive data')
-        pos_data.to_csv("../Data/pos_dev_cookie.csv")
+        pos_data.to_csv("../DataSample/pos_dev_cookie.csv")
 
         num_of_neg_data = 3000
         print('Generating negative data.')
         neg_data = self.simple_neg_data_generate(device_df, cookie_df, num_of_neg_data)
         print('Saving nagative data')
-        neg_data.to_csv("../Data/neg_dev_cookie.csv")
+        neg_data.to_csv("../DataSample/neg_dev_cookie.csv")
 
 if __name__ == '__main__':
     data = Data()
