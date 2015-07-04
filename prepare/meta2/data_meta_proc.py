@@ -12,7 +12,7 @@ import pickle
 g_index_dummy = {'dev': [2, 3, 4, 5, 7, 8],
                  'coo': [2, 3, 4, 5, 7, 8]}
 g_load_path = '../../DataSample'
-g_save_path = '../../DataSample/2015.07.02.primitive'
+g_save_path = '../../DataSample/2015.07.04.primitive'
 g_num_neg = 0
 
 
@@ -136,8 +136,6 @@ def main():
         g_num_neg = len(matched_idx)
     unmatched_idx = get_unmatch_idx(dev_df, coo_df, g_num_neg)
     # pos and neg data initialization
-    import pdb; pdb.set_trace()
-    pos_data = {'dev': sparse.lil_matrix((len(matched_idx), length_dev)),
                 'coo': sparse.lil_matrix((len(matched_idx), length_coo))}
     neg_data = {'dev': sparse.lil_matrix((g_num_neg, len(dev_df_dummy_fill))),
                 'coo': sparse.lil_matrix((g_num_neg, len(coo_df_dummy_fill)))}
@@ -167,9 +165,15 @@ def main():
     assert(pos_data['dev'].shape[0] == pos_data['coo'].shape[0])
     assert(neg_data['dev'].shape[0] == neg_data['coo'].shape[0])
     print('No assertion is raised.')
-    # saving
-
-
+    # saving, by pickle
+    with open(os.path.join(g_save_path, 'pos_data'), 'wb') as psf:
+        pickle.dump(psf, pos_data)
+        psf.close()
+    with open(os.path.join(g_save_path, 'neg_data'), 'wb') as nsf:
+        pickle.dump(nsf, neg_data)
+        nsf.close()
+    print('saving done')
+    
 
 if __name__ == '__main__':
     main()
