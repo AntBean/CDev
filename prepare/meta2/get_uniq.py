@@ -18,6 +18,7 @@ def get_uniq_column(fn, idx):
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
     out = out.split('\n')
+    out = out[1:]  # remove the first one element, which is the header
     out.pop()  # last one is usually empty string
     return out
 
