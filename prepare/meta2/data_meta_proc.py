@@ -11,8 +11,8 @@ import pickle
 # Some global variables
 g_index_dummy = {'dev': [2, 3, 4, 5, 7, 8],
                  'coo': [2, 3, 4, 5, 7, 8]}
-g_load_path = '../../DataSample'
-g_save_path = '../../DataSample/2015.07.04.primitive'
+g_load_path = '../../Data'
+g_save_path = '../../Data/2015.07.04.primitive'
 g_num_neg = 0
 
 
@@ -172,11 +172,12 @@ def main():
     assert(neg_data['dev'].shape[0] == neg_data['coo'].shape[0])
     print('No assertion is raised.')
     # saving, by pickle
+    os.system('mkdir -p ' + g_save_path)
     with open(os.path.join(g_save_path, 'pos_data.pkl'), 'wb') as psf:
-        pickle.dump(psf, pos_data)
+        pickle.dump(pos_data, psf)
         psf.close()
     with open(os.path.join(g_save_path, 'neg_data.pkl'), 'wb') as nsf:
-        pickle.dump(nsf, neg_data)
+        pickle.dump(neg_data, nsf)
         nsf.close()
     print('saving done')
     
