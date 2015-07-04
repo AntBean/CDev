@@ -82,7 +82,7 @@ def get_match_idx(df1, df2, kw='drawbridge_handle'):
 def get_unmatch_idx(df1, df2, num, kw='drawbridge_handle'):
     """unmatching"""
     unmatched_idx = []
-    while len(unmatched_idx) <= num:
+    while len(unmatched_idx) < num:
         id1 = np.random.randint(len(df1[kw]))
         id2 = np.random.randint(len(df2[kw]))
         if df1[kw][id1] != df2[kw][id2]:
@@ -95,15 +95,18 @@ def prune_lil_matrix(mat, idx):
     assert isinstance(mat, sparse.lil_matrix)
     mat.rows = np.delete(mat.rows, idx)
     mat.data = np.delete(mat.data, idx)
-    mat._shape = (mat._shape[0] - 1, mat._shape[1])
+    mat._shape = (mat._shape[0]-1, mat._shape[1])
     return mat
 
 
 def prune_allzero_row_lil_matrix(mat):
     """find and prune all zero rows in lil_matrix"""
     rowidx, _ = mat.nonzero()
+    rowidx = list( set(range(mat.shape[0])) - set(rowidx) )
+    offset = 0
     for relem in rowidx:
-        mat = prune_lil_matrix(mat, relem)
+        mat = prune_lil_matrix(mat, relem-offset)
+        offset += 1
     return mat
 
 
@@ -120,12 +123,14 @@ def main():
     # example generation, to get length
     length_dev, length_coo = 0, 0
     while length_dev == 0:
-        dev_df_dummy_fill = add_dummies(dev_df.iloc[0],
+        id = np.random.randint(len(dev_df['drawbridge_handle']))
+        dev_df_dummy_fill = add_dummies(dev_df.iloc[id],
                                         g_index_dummy.get('dev'),
                                         uniq_ref_dev)
         length_dev = len(dev_df_dummy_fill) if dev_df_dummy_fill is not None else 0
     while length_coo == 0:
-        coo_df_dummy_fill = add_dummies(coo_df.iloc[0],
+        id = np.random.randint(len(coo_df['drawbridge_handle']))
+        coo_df_dummy_fill = add_dummies(coo_df.iloc[id],
                                         g_index_dummy.get('coo'),
                                         uniq_ref_coo)
         length_coo = len(coo_df_dummy_fill) if coo_df_dummy_fill is not None else 0
@@ -136,9 +141,10 @@ def main():
         g_num_neg = len(matched_idx)
     unmatched_idx = get_unmatch_idx(dev_df, coo_df, g_num_neg)
     # pos and neg data initialization
+    pos_data = {'dev': sparse.lil_matrix((len(matched_idx), length_dev)),
                 'coo': sparse.lil_matrix((len(matched_idx), length_coo))}
-    neg_data = {'dev': sparse.lil_matrix((g_num_neg, len(dev_df_dummy_fill))),
-                'coo': sparse.lil_matrix((g_num_neg, len(coo_df_dummy_fill)))}
+    neg_data = {'dev': sparse.lil_matrix((g_num_neg, length_dev)),
+                'coo': sparse.lil_matrix((g_num_neg, length_coo))}
     # start filling pos/neg data
     for i, (x, y) in enumerate(matched_idx):
         pos_dev_elem = add_dummies(dev_df.iloc[x], g_index_dummy.get('dev'), uniq_ref_dev)
@@ -166,10 +172,10 @@ def main():
     assert(neg_data['dev'].shape[0] == neg_data['coo'].shape[0])
     print('No assertion is raised.')
     # saving, by pickle
-    with open(os.path.join(g_save_path, 'pos_data'), 'wb') as psf:
+    with open(os.path.join(g_save_path, 'pos_data.pkl'), 'wb') as psf:
         pickle.dump(psf, pos_data)
         psf.close()
-    with open(os.path.join(g_save_path, 'neg_data'), 'wb') as nsf:
+    with open(os.path.join(g_save_path, 'neg_data.pkl'), 'wb') as nsf:
         pickle.dump(nsf, neg_data)
         nsf.close()
     print('saving done')
