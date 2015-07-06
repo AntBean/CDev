@@ -6,6 +6,7 @@ import numpy as np
 from scipy import sparse
 import pandas as pd
 import pickle
+import gc
 
 
 # Some global variables
@@ -140,6 +141,7 @@ def main():
     if g_num_neg <= 0:
         g_num_neg = len(matched_idx)
     unmatched_idx = get_unmatch_idx(dev_df, coo_df, g_num_neg)
+    print('matched and unmatched indices generated.')
     # pos and neg data initialization
     pos_data = {'dev': sparse.lil_matrix((len(matched_idx), length_dev)),
                 'coo': sparse.lil_matrix((len(matched_idx), length_coo))}
@@ -153,6 +155,9 @@ def main():
             continue
         pos_data['dev'][i] = pos_dev_elem
         pos_data['coo'][i] = pos_coo_elem
+        del pos_dev_elem
+        del pos_coo_elem
+        gc.collect()
     print('positive data generating done.')
     for i, (x, y) in enumerate(unmatched_idx):
         neg_dev_elem = add_dummies(dev_df.iloc[x], g_index_dummy.get('dev'), uniq_ref_dev)
@@ -161,6 +166,9 @@ def main():
             continue
         neg_data['dev'][i] = neg_dev_elem
         neg_data['coo'][i] = neg_coo_elem
+        del neg_dev_elem
+        del neg_coo_elem
+        gc.collect()
     print('negitive data generating done.')
     # pruning the all-zero line
     prune_allzero_row_lil_matrix(pos_data['dev'])
