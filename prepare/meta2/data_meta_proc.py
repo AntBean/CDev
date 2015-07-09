@@ -30,7 +30,7 @@ def add_dummies(ds, idx, ref, label=False):
         """find the position of string in ref, and derive dummies"""
         assert isinstance(ref, list)
         idx = ref.index(string)  # string must be in the ref
-        arr = np.zeros(len(ref), )
+        arr = np.zeros(len(ref), idtype=np.uint16)
         arr[idx] = 1
         return arr
 
@@ -143,10 +143,10 @@ def main():
     unmatched_idx = get_unmatch_idx(dev_df, coo_df, g_num_neg)
     print('matched and unmatched indices generated.')
     # pos and neg data initialization
-    pos_data = {'dev': sparse.lil_matrix((len(matched_idx), length_dev)),
-                'coo': sparse.lil_matrix((len(matched_idx), length_coo))}
-    neg_data = {'dev': sparse.lil_matrix((g_num_neg, length_dev)),
-                'coo': sparse.lil_matrix((g_num_neg, length_coo))}
+    pos_data = {'dev': sparse.lil_matrix((len(matched_idx), length_dev), dtype=np.uint16),
+                'coo': sparse.lil_matrix((len(matched_idx), length_coo), dtype=np.uint16)}
+    neg_data = {'dev': sparse.lil_matrix((g_num_neg, length_dev), dtype=uint16),
+                'coo': sparse.lil_matrix((g_num_neg, length_coo), dtype=uint16)}
     # start filling pos/neg data
     for i, (x, y) in enumerate(matched_idx):
         pos_dev_elem = add_dummies(dev_df.iloc[x], g_index_dummy.get('dev'), uniq_ref_dev)
