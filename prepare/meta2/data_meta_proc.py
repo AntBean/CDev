@@ -153,8 +153,8 @@ def main():
         pos_coo_elem = add_dummies(coo_df.iloc[y], g_index_dummy.get('coo'), uniq_ref_coo)
         if pos_dev_elem is not None and pos_coo_elem is not None:
             continue
-        pos_data['dev'][i] = pos_dev_elem
-        pos_data['coo'][i] = pos_coo_elem
+        pos_data['dev'][i,:] = pos_dev_elem   # Feeling suspicious about this line; might not be space efficient. Learn Sparse matrix construction!!
+        pos_data['coo'][i,:] = pos_coo_elem
         del pos_dev_elem
         del pos_coo_elem
         gc.collect()
@@ -164,8 +164,8 @@ def main():
         neg_coo_elem = add_dummies(coo_df.iloc[y], g_index_dummy.get('coo'), uniq_ref_coo)
         if neg_dev_elem is not None and neg_coo_elem is not None:
             continue
-        neg_data['dev'][i] = neg_dev_elem
-        neg_data['coo'][i] = neg_coo_elem
+        neg_data['dev'][i,:] = neg_dev_elem
+        neg_data['coo'][i,:] = neg_coo_elem
         del neg_dev_elem
         del neg_coo_elem
         gc.collect()
