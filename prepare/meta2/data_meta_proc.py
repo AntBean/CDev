@@ -30,7 +30,7 @@ def add_dummies(ds, idx, ref, label=False):
         """find the position of string in ref, and derive dummies"""
         assert isinstance(ref, list)
         idx = ref.index(string)  # string must be in the ref
-        arr = np.zeros(len(ref), idtype=np.uint16)
+        arr = np.zeros(len(ref), dtype=np.uint16)
         arr[idx] = 1
         return arr
 
@@ -141,7 +141,14 @@ def main():
     if g_num_neg <= 0:
         g_num_neg = len(matched_idx)
     unmatched_idx = get_unmatch_idx(dev_df, coo_df, g_num_neg)
+    # save both matched and unmatched indices
+    indices = {'pos': matched_idx, 'neg': unmatched_idx}
+    os.system('mkdir -p ' + g_save_path)
+    with open(os.path.join(g_save_path, 'indices.pkl'), 'wb') as idf:
+        pickle.dump(indices, idf)
+        idf.close()
     print('matched and unmatched indices generated.')
+    sys.exit(1)
     # pos and neg data initialization
     pos_data = {'dev': sparse.lil_matrix((len(matched_idx), length_dev), dtype=np.uint16),
                 'coo': sparse.lil_matrix((len(matched_idx), length_coo), dtype=np.uint16)}
