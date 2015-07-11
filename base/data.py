@@ -142,33 +142,36 @@ class DataSource(object):
         else:
             print('item must be [dev | coo]', file=sys.stderr)
             sys.exit()
-        # data initialization
-        # TODO from here.
+        # Using a tmp lil_matrix as the bridge, TODO is this gonna be faster?
+        batch_dev_tmp = sparse.lil_matrix(batch_size, self.length_dev)
+        batch_coo_tmp = sparse.lil_matrix(batch_size, self.length_coo)
+        # start filling the batch
+        while i <= batch_size:
+            # get id
+            pos_id = self.train_data_idx_pos[np.random.randint(len(self.train_data_idx_pos))]
+            neg_id = self.train_data_idx_neg[np.random.randint(len(self.train_data_idx_neg))]
+            # One positive
+            batch_dev_tmp_elem, batch_coo_tmp_elem = [], []
+            while len(batch_dev_tmp_elem) == 0 or len(batch_coo_tmp_elem) == 0:
+                batch_dev_tmp_elem = add_dummies(self.dev_df_train.iloc[pos_id[0]],
+                                                 self.index_dummy.get('dev'),
+                                                 self.uniq_ref_dev)
+                batch_coo_tmp_elem = add_dummies(self.coo_df_train.iloc[pos_id[1]],
+                                                 self.index_dummy.get('coo'),
+                                                 self.uniq_ref_coo)
+            batch_dev_tmp[i,:], batch_coo_tmp[i,:] = batch_dev_tmp_elem, batch_coo_tmp_elem
+            # One negative
+            batch_dev_tmp_elem, batch_coo_tmp_elem = [], []
+            while len(batch_dev_tmp_elem) == 0 or len(batch_coo_tmp_elem) == 0:
+                batch_dev_tmp_elem = add_dummies(self.dev_df_train.iloc[neg_id[0]],
+                                                 self.index_dummy.get('dev'),
+                                                 self.uniq_ref_dev)
+                batch_coo_tmp_elem = add_dummies(self.coo_df_train.iloc[neg_id[1]],
+                                                 self.index_dummy.get('coo'),
+                                                 self.uniq_ref_coo)
+            batch_dev_tmp[i+1,:], batch_coo_tmp[i+1,:] = batch_dev_tmp_elem, batch_coo_tmp_elem
+        batch = {}
+        batch['dev'] = batch_dev_tmp.tocsr()
+        batch['coo'] = batch_coo_tmp.tocsr()
 
-
-        # data loading
-
-        for i in range(batch_size):
-            
-
-        
-        
-
-
-
-def main():
-    # example generation, to get length
-    # start matching and unmatching
-    matched_idx = get_match_idx(dev_df, coo_df)
-    global g_num_neg
-    if g_num_neg <= 0:
-        g_num_neg = len(matched_idx)
-    unmatched_idx = get_unmatch_idx(dev_df, coo_df, g_num_neg)
-    # save both matched and unmatched indices
-    indices = {'pos': matched_idx, 'neg': unmatched_idx}
-    os.system('mkdir -p ' + g_save_path)
-    with open(os.path.join(g_save_path, 'indices.pkl'), 'wb') as idf:
-        pickle.dump(indices, idf)
-        idf.close()
-    print('matched and unmatched indices generated and saved to ' + os.path.join(g_save_path, 'indices.pkl'))
-    print('saving done')
+        return batch
