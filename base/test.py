@@ -13,14 +13,14 @@ def testData():
     g_index_drop = {'dev': [2], 'coo': [2]}
     g_load_path = '../Data'
     d = DataSource(g_index_dummy, g_index_drop, g_load_path)
-    l = d.getNextBatch(32)
+    l = d.getNextBatch(320)
     print(l)
     # start testing time
     start = time()
     for i in range(10):
-        l = d.getNextBatch(32)
+        l = d.getNextBatch(320)
     end = time()
-    print('Time used for getting batch: {}'.format(end-start))
+    print('Time used for getting batch: {}'.format(end-start/10))
 
 
 
