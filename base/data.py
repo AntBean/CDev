@@ -42,7 +42,6 @@ def add_dummies(ds, idx, ref, label=False):
         arr[idx] = 1
         return arr
 
-    import pdb; pdb.set_trace()
     assert len(ref) == len(ds)-1  # references have to be padded, and drawbridge_handle is the only diff
     assert isinstance(ds, pd.core.series.Series)
     assert isinstance(idx, list)
@@ -143,8 +142,8 @@ class DataSource(object):
         self.uniq_ref_dev = prune(uniq_ref.get('dev'), self.index_drop.get('dev'))
         self.uniq_ref_coo = prune(uniq_ref.get('coo'), self.index_drop.get('coo'))
         # pad
-        self.uniq_ref_dev = padding(len(self.dev_df_train.columns)-1, uniq_ref.get('dev'))
-        self.uniq_ref_coo = padding(len(self.coo_df.columns)-1, uniq_ref.get('coo'))
+        self.uniq_ref_dev = padding(len(self.dev_df_train.columns)-1, self.uniq_ref_dev)
+        self.uniq_ref_coo = padding(len(self.coo_df.columns)-1, self.uniq_ref_coo)
         # get training indices
         data_idx = pickle.load(open(os.path.join(self.data_path, 'indices.pkl'), 'rb'))
         self.train_data_idx_pos = data_idx.get('pos')
