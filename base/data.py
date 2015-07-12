@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 from scipy import sparse
 import pickle
+from functools import reduce
 
 
 """
@@ -73,6 +74,28 @@ def padding(num, ref, pad=[]):
     for i in diff:
         ref[i] = pad
     return ref
+
+
+def list_add(a, b):
+    """a+b"""
+    res = map(lambda x: x[0]+x[1], zip(a,b))
+    return list(res)
+
+
+def list_sub(a, b):
+    """a-b"""
+    res = map(lambda x: x[0]-x[1], zip(a,b))
+    return list(res)
+
+
+def list_diff_sub(a, b):
+    """diff, drop and subtract the offset"""
+    aux = []
+    for bb in b:
+        elem = list( map(lambda x: x>bb, a) )
+        aux.append(elem)
+    aux = reduce(lambda x, y: list_add(x,y), aux)
+    return list_sub(a, aux)
 
 
 def prune(dc, drop):
