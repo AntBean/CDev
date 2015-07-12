@@ -6,11 +6,14 @@ Data generating
 I tried to write a generic data generator. It takes csv file as it input, loading into memory as pandas.dataframe, and process the dummy variable. It can future be specifed the indices to be dropped out. The detailed explanation and pipeline are the following: 
 
 * How to do meta processing?     
-As in this case, data samples are essentially pairs. So the job meta-processing of it is to discover matched indices and unmatched indices.
+As in this case, data samples are essentially pairs. So the job meta-processing of it is to discover matched indices and unmatched indices.      
+
+Pipeline:
 
     cd ./meta
     ./get_uniq.sh
     python get_pair_indices.py
+
 
 What is worth noting is that, get_uniq.sh adopts mundane tool `awk` to process the csv file, which is rather fast! (fuck pandas lol)
 get_pair_indices.py finds the matching indices based on the processing done by `get_uniq.sh`       
