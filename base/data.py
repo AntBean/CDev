@@ -175,7 +175,7 @@ class DataSource(object):
         while i < batch_size-2:
             # One positive
             batch_dev_tmp_elem, batch_coo_tmp_elem = None, None
-            while batch_dev_tmp_elem is not None or batch_coo_tmp_elem is not None:
+            while not hasattr(batch_dev_tmp_elem,'__array__') or not hasattr(batch_coo_tmp_elem, '__array__'):
                 # get id
                 pos_id = self.train_data_idx_pos[np.random.randint(len(self.train_data_idx_pos))]
                 batch_dev_tmp_elem = add_dummies(self.dev_df_train.iloc[pos_id[0]],
@@ -187,7 +187,7 @@ class DataSource(object):
             batch_dev_tmp[i,:], batch_coo_tmp[i,:] = batch_dev_tmp_elem, batch_coo_tmp_elem
             # One negative
             batch_dev_tmp_elem, batch_coo_tmp_elem = None, None
-            while batch_dev_tmp_elem == None or batch_coo_tmp_elem == None:
+            while not hasattr(batch_dev_tmp_elem,'__array__') or not hasattr(batch_coo_tmp_elem, '__array__'):
                 # get id
                 neg_id = self.train_data_idx_neg[np.random.randint(len(self.train_data_idx_neg))]
                 batch_dev_tmp_elem = add_dummies(self.dev_df_train.iloc[neg_id[0]],
@@ -199,6 +199,6 @@ class DataSource(object):
             batch_dev_tmp[i+1,:], batch_coo_tmp[i+1,:] = batch_dev_tmp_elem, batch_coo_tmp_elem
             i += 2
         batch = {}
-        batch['dev'] = sparse.csr_matrix(batch_dev_tmp)
-        batch['coo'] = sparse.csr_matrix(batch_coo_tmp)
+        batch['dev'] = sparse.csr_matrix(batch_dev_tmp, dtype=np.float32)
+        batch['coo'] = sparse.csr_matrix(batch_coo_tmp, dtype=np.float32)
         return batch
