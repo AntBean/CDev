@@ -1,17 +1,15 @@
 #-*- coding: utf-8 -*-
 # By Jake
 
+
+__all__ = ['DataSource']
+
 import os
 import sys
 import numpy as np
-import linecache
-
-# Some global variables
-g_index_dummy = {'dev': [2, 3, 4, 5, 7, 8],
-                 'coo': [2, 3, 4, 5, 7, 8]}
-g_load_path = '../../Data'
-g_save_path = '../../Data/2015.07.04.primitive'
-g_num_neg = 0
+import pandas as pd
+from scipy import sparse
+import pickle
 
 
 """
@@ -22,9 +20,11 @@ g_num_neg = 0
 """
 
 
-def load_as_dataframe(fn):
+def load_as_dataframe(fn, drop=[]):
     """load csv file into memory"""
+    assert(isinstance(drop, list))
     df = pd.read_csv(fn)
+    df = df.drop(df.columns[drop], axis=1)
     return df
 
 
@@ -40,6 +40,8 @@ def add_dummies(ds, idx, ref, label=False):
         return arr
 
     assert len(ref) == len(ds)-1  # references have to be padded, and drawbridge_handle is the only diff
+    # TODO a drop will mess this...
+
     assert isinstance(ds, pd.core.series.Series)
     assert isinstance(idx, list)
     arr = ds.values.copy()
@@ -73,36 +75,52 @@ def padding(num, ref, pad=[]):
     return ref
 
 
+def prune(dc, drop):
+    for d in drop:
+        dc.pop(d)
+    # TODO subtract!!!
+    return dc
+
 """
  Main functionality
 """
 class DataSource(object):
     """data source class, streaming data samples"""
-    def __init__(self, index_dummy, data_path):
+    def __init__(self, index_dummy, index_drop, data_path):
         # args parsing
         self.index_dummy = index_dummy
+        self.index_drop = index_drop
         self.data_path = data_path
         self.dev_train_data_path = os.path.join(data_path, 'dev_train_basic.csv')
         self.dev_test_data_path = os.path.join(data_path, 'dev_test_basic.csv')
         self.coo_data_path = os.path.join(data_path, 'cookie_all_basic.csv')
+        # adjust index_drop
+        self.index_drop['dev'] = list( map(lambda x: x-1, self.index_drop.get('dev')) )
+        self.index_drop['coo'] = list( map(lambda x: x-1, self.index_drop.get('coo')) )
+        # adjust index_dummy, and according to index_drop
+        self.index_dummy['dev'] = list( map(lambda x: x-1, self.index_dummy.get('dev')) )
+        self.index_dummy['dev'] = list( filter(lambda x: x not in self.index_drop.get('dev'),
+                                               self.index_dummy.get('dev')) )
+        # TODO, subtract
+        self.index_dummy['coo'] = list( map(lambda x: x-1, self.index_dummy.get('coo')) )
+        self.index_dummy['coo'] = list( filter(lambda x: x not in self.index_drop.get('coo'),
+                                               self.index_dummy.get('coo')) )
+        # TODO, subtract
         # load in data
-        self.dev_df_train = load_as_dataframe(self.dev_train_data_path)
-        self.dev_df_test = load_as_dataframe(self.dev_test_data_path)
-        self.coo_df = load_as_dataframe(self.coo_data_path)
+        self.dev_df_train = load_as_dataframe(self.dev_train_data_path, self.index_drop.get('dev'))
+        self.dev_df_test = load_as_dataframe(self.dev_test_data_path, self.index_drop.get('dev'))
+        self.coo_df = load_as_dataframe(self.coo_data_path, self.index_drop.get('coo'))
         # get uniq.pkl
         uniq_ref = pickle.load(open(os.path.join(self.data_path, 'uniq.pkl'), 'rb'))
-        self.uniq_ref_dev = padding(len(dev_df.columns)-1, uniq_ref.get('dev'))
-        self.uniq_ref_coo = padding(len(coo_df.columns)-1, uniq_ref.get('coo'))
+        self.uniq_ref_dev = padding(len(self.dev_df_train.columns)-1, uniq_ref.get('dev'))
+        self.uniq_ref_coo = padding(len(self.coo_df.columns)-1, uniq_ref.get('coo'))
+        # clear w.r.t index_drop
+        self.uniq_ref_dev = prune(self.uniq_ref_dev, self.index_drop.get('dev'))
+        self.uniq_ref_coo = prune(self.uniq_ref_coo, self.index_drop.get('coo'))
         # get training indices
         data_idx = pickle.load(open(os.path.join(self.data_path, 'indices.pkl'), 'rb'))
         self.train_data_idx_pos = data_idx.get('pos')
         self.train_data_idx_neg = data_idx.get('neg')
-
-        # get test and validation indices TODO
-
-        # adjust index_dummy
-        self.index_dummy['dev'] = list( map(lambda x: x-1, self.index_dummy.get('dev')) )
-        self.index_dummy['coo'] = list( map(lambda x: x-1, self.index_dummy.get('coo')) )
         # get the length of dataset
         length_dev, length_coo = 0, 0
         while length_dev == 0:
@@ -120,58 +138,40 @@ class DataSource(object):
         self.length_dev = length_dev
         self.length_coo = length_coo
 
-    def getNextBatch(self, batch_size, item='dev', set='train'):
-        # parsing
-        if item == 'dev':
-            if set == 'train':
-                this_path = self.dev_train_data_path
-                this_pos_idx = self.train_data_idx_pos
-                this_neg_idx = self.train_data_idx_neg
-            elif set == 'test':
-                this_path = self.dev_test_data_path
-                # TODO
-                print('Not supported so far', file=sys.stderr)
-                sys.exit()
-            else:
-                print('set must be [train | test]', file=sys.stderr)
-                sys.exit()
-            this_uniq_ref = self.uniq_ref_dev
-        elif item == 'coo':
-            this_path = self.coo_data_path
-            this_uniq_ref = self.uniq_ref_coo
-        else:
-            print('item must be [dev | coo]', file=sys.stderr)
-            sys.exit()
-        # Using a tmp lil_matrix as the bridge, TODO is this gonna be faster?
-        batch_dev_tmp = sparse.lil_matrix(batch_size, self.length_dev)
-        batch_coo_tmp = sparse.lil_matrix(batch_size, self.length_coo)
+    def getNextBatch(self, batch_size):
+        """for training"""
+        # TODO is this gonna be faster?
+        batch_dev_tmp = np.zeros((batch_size, self.length_dev))
+        batch_coo_tmp = np.zeros((batch_size, self.length_coo))
         # start filling the batch
-        while i <= batch_size:
-            # get id
-            pos_id = self.train_data_idx_pos[np.random.randint(len(self.train_data_idx_pos))]
-            neg_id = self.train_data_idx_neg[np.random.randint(len(self.train_data_idx_neg))]
+        i = 0
+        while i < batch_size-2:
             # One positive
-            batch_dev_tmp_elem, batch_coo_tmp_elem = [], []
-            while len(batch_dev_tmp_elem) == 0 or len(batch_coo_tmp_elem) == 0:
+            batch_dev_tmp_elem, batch_coo_tmp_elem = None, None
+            while batch_dev_tmp_elem is not None or batch_coo_tmp_elem is not None:
+                # get id
+                pos_id = self.train_data_idx_pos[np.random.randint(len(self.train_data_idx_pos))]
                 batch_dev_tmp_elem = add_dummies(self.dev_df_train.iloc[pos_id[0]],
                                                  self.index_dummy.get('dev'),
                                                  self.uniq_ref_dev)
-                batch_coo_tmp_elem = add_dummies(self.coo_df_train.iloc[pos_id[1]],
+                batch_coo_tmp_elem = add_dummies(self.coo_df.iloc[pos_id[1]],
                                                  self.index_dummy.get('coo'),
                                                  self.uniq_ref_coo)
             batch_dev_tmp[i,:], batch_coo_tmp[i,:] = batch_dev_tmp_elem, batch_coo_tmp_elem
             # One negative
-            batch_dev_tmp_elem, batch_coo_tmp_elem = [], []
-            while len(batch_dev_tmp_elem) == 0 or len(batch_coo_tmp_elem) == 0:
+            batch_dev_tmp_elem, batch_coo_tmp_elem = None, None
+            while batch_dev_tmp_elem == None or batch_coo_tmp_elem == None:
+                # get id
+                neg_id = self.train_data_idx_neg[np.random.randint(len(self.train_data_idx_neg))]
                 batch_dev_tmp_elem = add_dummies(self.dev_df_train.iloc[neg_id[0]],
                                                  self.index_dummy.get('dev'),
                                                  self.uniq_ref_dev)
-                batch_coo_tmp_elem = add_dummies(self.coo_df_train.iloc[neg_id[1]],
+                batch_coo_tmp_elem = add_dummies(self.coo_df.iloc[neg_id[1]],
                                                  self.index_dummy.get('coo'),
                                                  self.uniq_ref_coo)
             batch_dev_tmp[i+1,:], batch_coo_tmp[i+1,:] = batch_dev_tmp_elem, batch_coo_tmp_elem
+            i += 2
         batch = {}
-        batch['dev'] = batch_dev_tmp.tocsr()
-        batch['coo'] = batch_coo_tmp.tocsr()
-
+        batch['dev'] = sparse.csr_matrix(batch_dev_tmp)
+        batch['coo'] = sparse.csr_matrix(batch_coo_tmp)
         return batch
