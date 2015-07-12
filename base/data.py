@@ -18,6 +18,8 @@ from functools import reduce
  - load_as_dataframe
  - add_dummies
  - padding
+ - list operations ( add, subtract, diff_subtract)
+ - prune
 """
 
 
@@ -40,9 +42,8 @@ def add_dummies(ds, idx, ref, label=False):
         arr[idx] = 1
         return arr
 
+    import pdb; pdb.set_trace()
     assert len(ref) == len(ds)-1  # references have to be padded, and drawbridge_handle is the only diff
-    # TODO a drop will mess this...
-
     assert isinstance(ds, pd.core.series.Series)
     assert isinstance(idx, list)
     arr = ds.values.copy()
@@ -101,8 +102,11 @@ def list_diff_sub(a, b):
 def prune(dc, drop):
     for d in drop:
         dc.pop(d)
-    # TODO subtract!!!
+    old_keys = list( dc.keys() )
+    new_keys = list_diff_sub(old_keys, drop)
+    dc = dict( zip(new_keys, dc.values()) )
     return dc
+
 
 """
  Main functionality
@@ -124,22 +128,23 @@ class DataSource(object):
         self.index_dummy['dev'] = list( map(lambda x: x-1, self.index_dummy.get('dev')) )
         self.index_dummy['dev'] = list( filter(lambda x: x not in self.index_drop.get('dev'),
                                                self.index_dummy.get('dev')) )
-        # TODO, subtract
+        self.index_dummy['dev'] = list_diff_sub(self.index_dummy.get('dev'), self.index_drop.get('dev'))
         self.index_dummy['coo'] = list( map(lambda x: x-1, self.index_dummy.get('coo')) )
         self.index_dummy['coo'] = list( filter(lambda x: x not in self.index_drop.get('coo'),
                                                self.index_dummy.get('coo')) )
-        # TODO, subtract
+        self.index_dummy['coo'] = list_diff_sub(self.index_dummy.get('coo'), self.index_drop.get('coo'))
         # load in data
         self.dev_df_train = load_as_dataframe(self.dev_train_data_path, self.index_drop.get('dev'))
         self.dev_df_test = load_as_dataframe(self.dev_test_data_path, self.index_drop.get('dev'))
         self.coo_df = load_as_dataframe(self.coo_data_path, self.index_drop.get('coo'))
         # get uniq.pkl
         uniq_ref = pickle.load(open(os.path.join(self.data_path, 'uniq.pkl'), 'rb'))
+        # clear w.r.t index_drop
+        self.uniq_ref_dev = prune(uniq_ref.get('dev'), self.index_drop.get('dev'))
+        self.uniq_ref_coo = prune(uniq_ref.get('coo'), self.index_drop.get('coo'))
+        # pad
         self.uniq_ref_dev = padding(len(self.dev_df_train.columns)-1, uniq_ref.get('dev'))
         self.uniq_ref_coo = padding(len(self.coo_df.columns)-1, uniq_ref.get('coo'))
-        # clear w.r.t index_drop
-        self.uniq_ref_dev = prune(self.uniq_ref_dev, self.index_drop.get('dev'))
-        self.uniq_ref_coo = prune(self.uniq_ref_coo, self.index_drop.get('coo'))
         # get training indices
         data_idx = pickle.load(open(os.path.join(self.data_path, 'indices.pkl'), 'rb'))
         self.train_data_idx_pos = data_idx.get('pos')
